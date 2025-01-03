@@ -4,8 +4,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chatRoutes');
-const bodyParser = require('body-parser');
-const path = require('path');
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 
 dotenv.config();
 connectDB();
@@ -19,9 +19,11 @@ const corsconfig = {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 };
-app.options('*', cors()); // Preflight requests
+app.options('*', cors(corsconfig)); // Preflight requests
 app.use(cors(corsconfig));
-app.use(express.json()); // Parse JSON requests
+app.use(cookieParser);
+app.use(express.json({limit:"50mb"})); // Parse JSON requests
+app.use(express.urlencoded({limit:"50mb"}))
 app.use(bodyParser.json()); // Parse request body
 
 
@@ -32,11 +34,6 @@ app.get("/",(req,res)=>{
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/chat', chatRoutes);
 
-// Serve Frontend Static Files
-app.use(express.static(path.join(__dirname, 'frontend/build')));
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
-});
 
 // Start Server
 app.listen(PORT, () => {
