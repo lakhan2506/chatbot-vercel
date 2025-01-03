@@ -1,13 +1,11 @@
 const express = require('express');
-const connectDB = require('./config/db')
-const dotenv = require('dotenv')
-const cors = require('cors')
+const connectDB = require('./config/db');
+const dotenv = require('dotenv');
+const cors = require('cors');
 const authRoutes = require('./routes/auth');
-const chatRoutes = require("./routes/chatRoutes");
+const chatRoutes = require('./routes/chatRoutes');
 const bodyParser = require('body-parser');
-const serverless = require('serverless-http')
-
-
+const path = require('path');
 
 dotenv.config();
 connectDB();
@@ -15,18 +13,29 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
+const corsconfig = {
+    origin: 'https://chatbot-frontend-umber.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+};
+app.options('*', cors()); // Preflight requests
+app.use(cors(corsconfig));
+app.use(express.json()); // Parse JSON requests
+app.use(bodyParser.json()); // Parse request body
 
-app.use(express.json());
-app.use(cors());
-app.use(bodyParser.json());
 
+// API Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
-app.use('/api/auth', authRoutes);
-app.use("/api/chat",chatRoutes)
+// Serve Frontend Static Files
+app.use(express.static(path.join(__dirname, 'frontend/build')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
 
-app.listen(PORT,()=>{
-    console.log(`Server is running on port ${PORT}`)
-})
-
-module.exports = app;
-module.exports.handler = serverless(app);
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

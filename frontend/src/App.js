@@ -11,19 +11,24 @@ function App() {
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
     const [chatHistory, setChatHistory] = useState([]);
 
+
     useEffect(() => {
         const token = localStorage.getItem("authToken");
-        const userId = localStorage.getItem("userId"); 
-        
+        const userId = localStorage.getItem("userId");
         if (token) {
             setIsUserLoggedIn(true);
         } else {
             setIsUserLoggedIn(false);
         }
-
+        console.log(token);
         if (userId && token) {
             axios
-                .get(`/api/chat/history/${userId}`)
+                .get(`https://chatbot-backend-nu-sable.vercel.app/api/v1/chat/history/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`, 
+                        "Content-Type": "application/json", 
+                    },
+                })
                 .then((response) => {
                     setChatHistory(response.data);
                 })

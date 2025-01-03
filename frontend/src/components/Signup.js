@@ -27,10 +27,19 @@ const Signup = ()=>{
     }
 
     try{
-      const response = await axios.post("/api/auth/signup",{
-        username,
-        password,
-      });
+      const response = await axios.post(
+        `https://chatbot-backend-nu-sable.vercel.app/api/v1/auth/signup`,
+        {
+            username,
+            password,
+        },
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            withCredentials: true, // Include credentials for cookies if needed
+        }
+    );
       setSuccess(response.data.message || "Signup successful!");
       setFormData({username:'',password:'',confirmPassword:''})
 

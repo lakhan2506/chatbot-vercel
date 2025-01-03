@@ -9,9 +9,16 @@ const ChatInterface = () => {
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
-        const response = await fetch(`/api/chat/history/${userId}`);
+        const token = localStorage.getItem("authToken"); // Retrieve token from local storage
+        const response = await fetch(`https://chatbot-backend-nu-sable.vercel.app/api/v1/chat/history/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add authorization header
+          },
+        });
         const chatHistory = await response.json();
-  
+
         const formattedMessages = chatHistory.flatMap((msg) => {
           const userMsg = {
             text: msg.userMessage,
@@ -35,40 +42,44 @@ const ChatInterface = () => {
             sender: "bot",
             timestamp: new Date(),
           }));
-  
+
           return [userMsg, botMsg, ...productMsgs];
         });
-  
+
         setMessages(formattedMessages);
       } catch (error) {
         console.error("Error fetching chat history:", error);
       }
     };
-  
+
     fetchChatHistory();
   }, [userId]);
-  
-  
+
+
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const userMessage = e.target.elements.message.value;
     if (userMessage.trim() === "") return;
-  
+
     const newUserMessage = { text: userMessage, sender: "user", timestamp: new Date() };
     setMessages((prev) => [...prev, newUserMessage]);
-  
+
     e.target.elements.message.value = "";
-  
+
     try {
-      const response = await fetch("/api/chat/message", {
+      const token = localStorage.getItem("authToken"); // Retrieve token from local storage
+      const response = await fetch(`https://chatbot-backend-nu-sable.vercel.app/api/v1/chat/message`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Add authorization header
+        },
         body: JSON.stringify({ userMessage, userId }),
       });
-  
+
       const data = await response.json();
-  
+
       const botMessage = { text: data.botMessage, sender: "bot", timestamp: new Date() };
       const productMessages = data.filteredProducts.map((product) => ({
         text: (
@@ -82,7 +93,7 @@ const ChatInterface = () => {
         sender: "bot",
         timestamp: new Date(),
       }));
-  
+
       setMessages((prev) => [...prev, botMessage, ...productMessages]);
     } catch (error) {
       console.error("Error fetching bot response:", error);
@@ -90,8 +101,8 @@ const ChatInterface = () => {
       setMessages((prev) => [...prev, errorMessage]);
     }
   };
-  
-  
+
+
 
   return (
     <div className="w-4/5 h-[825px] flex flex-col bg-gray-100 mx-auto">
@@ -99,19 +110,18 @@ const ChatInterface = () => {
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
             <div
-              className={`p-3 rounded-lg shadow ${
-                msg.sender === "user" ? "bg-blue-500 text-white text-[18px]" : "text-[18px] bg-gray-200 text-black"
-              }`}
+              className={`p-3 rounded-lg shadow ${msg.sender === "user" ? "bg-blue-500 text-white text-[18px]" : "text-[18px] bg-gray-200 text-black"
+                }`}
             >
               {typeof msg.text === "string" ? (
                 <>
                   <p>{msg.text}</p>
-                  <span className={`text-xs block mt-1 ${msg.sender==="user"?"text-white":"text-gray-500"}`}>
+                  <span className={`text-xs block mt-1 ${msg.sender === "user" ? "text-white" : "text-gray-500"}`}>
                     {msg.timestamp.toLocaleTimeString()}
                   </span>
                 </>
               ) : (
-                msg.text 
+                msg.text
               )}
             </div>
           </div>

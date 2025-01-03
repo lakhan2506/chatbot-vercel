@@ -12,14 +12,23 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await axios.post("/api/auth/login", {
-                username,
-                password,
-            });
+            const response = await axios.post(
+                `https://chatbot-backend-nu-sable.vercel.app/api/v1/auth/login`,
+                {
+                    username,
+                    password,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true, // Include credentials for cross-origin requests
+                }
+            );
 
             if (response.data.token) {
                 localStorage.setItem("authToken", response.data.token);
-                localStorage.setItem("userId",response.data.userId)
+                localStorage.setItem("userId", response.data.userId)
                 navigate("/");
             } else {
                 setErrorMessage("Invalid credentials. Please try again.");
