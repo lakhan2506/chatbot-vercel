@@ -26,6 +26,9 @@ app.use(bodyParser.json()); // Parse request body
 
 
 // API Routes
+app.get("/",(req,res)=>{
+    res.send("hello")
+})
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/chat', chatRoutes);
 
